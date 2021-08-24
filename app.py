@@ -2,11 +2,27 @@ import os
 import secrets
 from flask import Flask, render_template, request, sessions, redirect, session
 from flask.helpers import url_for
-from flask_socketio import SocketIO, send, emit
+from flask_socketio import SocketIO, join_room, leave_room, send, emit
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'secret!'
 socketio = SocketIO(app)
+
+chat_cache = {}
+
+@app.context_processor
+def override_url_for():
+    return dict(url_for=dated_url_for)
+
+def dated_url_for(endpoint, **values):
+    if endpoint == 'static':
+        filename = values.get('filename', None)
+        if filename:
+            file_path = os.path.join(app.root_path,
+                                 endpoint, filename)
+            values['q'] = int(os.stat(file_path).st_mtime)
+    return url_for(endpoint, **values)
+
 
 @app.route('/')
 def home():
@@ -28,8 +44,11 @@ def create_room():
 
 @app.route('/room/<room_id>')
 def room(room_id: str):
-    print(session.get('room_id', None))
-    return render_template('room.html', room_id=room_id)
+    if session.get('room_id', None) is None:
+        session.update({'room_id': room_id})
+    global chat_cache
+    return render_template('room.html', room_id=room_id,
+                            chats=chat_cache.get(room_id, []))
 
 # バックグラウンドでサーバー側から常に情報を与える
 # def background(comment):
@@ -45,7 +64,29 @@ def room(room_id: str):
 
 @socketio.on('message')
 def handle_message(data):
-    print('received message: ' + data)
+    room_id = session.get('room_id')
+    print(room_id, data)
+    global chat_cache
+    if chat_cache.get(room_id) is None:
+        chat_cache[room_id] = []
+    chat_cache[room_id].append(data['data'])
+    emit('message', data, to=room_id)
+
+@socketio.on('join')
+def handle_join(data):
+    room_id = data.get('data')
+    join_room(room_id)
+    print('入室', room_id)
+    send('入室しました．', to=room_id)
+
+@socketio.on('leave')
+def handle_leave(data):
+    room_id = data.get('data')
+    leave_room(room_id)
+    print('退室', room_id)
+    send('退室しました', to=room_id)
+    global chat_cache
+    del chat_cache[room_id]
 
 @socketio.on('json')
 def handle_json(json):
@@ -55,9 +96,9 @@ def handle_json(json):
 def handle_my_custom_event(json):
     print('received json: ' + str(json))
 
-@socketio.on('my event', namespace='/test')
-def handle_my_custom_namespace_event(json):
-    print('received json: ' + str(json))
+# @socketio.on('my event', namespace='/test')
+# def handle_my_custom_namespace_event(json):
+#     print('received json: ' + str(json))
 
 if __name__ == '__main__':
     socketio.run(app, debug=True)

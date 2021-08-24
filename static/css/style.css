@@ -1,0 +1,35 @@
+body, html {
+    margin: 0;
+    padding: 0;
+}
+
+h1 {
+    text-align: center;
+}
+#shareUrl {
+    display: block;
+    margin: 1rem auto;
+}
+#chat-container {
+    margin: 20px auto;
+    width: 100vw;
+    max-width: 500px;
+}
+#chat {
+    width: 100%;
+    height: 80vh;
+    overflow-y: scroll;
+    background: rgba(58, 171, 247, 0.8);
+}
+#typing {
+    width: 100%;
+}
+#typing #message {
+    margin: 0;
+    padding: 0;
+    width: 80%;
+}
+#typing #sendMessage {
+    margin: 0;
+    padding: 0;
+}

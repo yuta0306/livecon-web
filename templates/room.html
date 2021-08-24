@@ -4,14 +4,53 @@
         <meta charset="UTF-8">
         <meta http-equiv="X-UA-Compatible" content="IE=edge">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link rel="stylesheet" href="{{ url_for('static',filename='css/style.css') }}">
         <title>Room</title>
     </head>
     <body>
         <h1>Room</h1>
         <button id="shareUrl">URLを共有する</button>
+        <div id="chat-container">
+            <div id="chat">
+                {% for msg in chats %}
+                    <div>{{ msg }}</div>
+                {% endfor %}
+            </div>
+            {% if chat|length > 1 %}
+            {% set start = 'none' %}
+            {% set typing = 'block' %}
+            {% else %}
+            {% set start = 'block' %}
+            {% set typing = 'none' %}
+            {% endif %}
+            <div id="startChat" style="display: {{ start }};">
+                <input id="startChatBtn" type="button" value="start">
+            </div>
+            <div id="typing" style="display: {{ typing }};">
+                <input type="text" id="message">
+                <input id="sendMessage" type="button" value="send">
+            </div>
+        </div>
+        <a href="{{ url_for('home') }}">退出する</a>
     </body>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js" integrity="sha512-q/dWJ3kcmjBLU4Qc47E4A9kTB4m3wuTY7vkFJDTZKjTs8jhyGQnaUrxa0Ytd0ssMZhbNua9hE+E7Qv1j+DyZwA==" crossorigin="anonymous"></script>
     <script>
         const shareButton = document.getElementById('shareUrl');
+        const messageArea = document.getElementById('message');
+        const sendBtn = document.getElementById('sendMessage');
+        const chat = document.getElementById('chat');
+        const startChat = document.getElementById('startChat');
+        const startChatBtn = document.getElementById('startChatBtn');
+        const typing = document.getElementById('typing');
+        const socket = io();
+        const room_id = "{{ room_id }}";
+        let role;
+
+        socket.on('connect', function() {
+            socket.emit('my event', {data: 'I\'m connected!'});
+            socket.emit('join', {data: room_id});
+        });
+
         shareButton.addEventListener('click', e => {
             let url = window.location;
             const pre = document.createElement('pre');
@@ -23,6 +62,43 @@
             document.execCommand('copy');
             document.body.removeChild(pre);
             return
+        });
+        startChatBtn.addEventListener('click', e => {
+            socket.emit('message', {
+                data: '湯川先輩，お疲れ様です！！😀',
+                start: true,
+            })
+            startChat.style.display = 'none';
+            typing.style.display = 'block';
         })
+        sendBtn.addEventListener('click', e => {
+            let message = messageArea.value;
+            if (message == '') return;
+            socket.emit('message', {
+                data: message,
+                start: false,
+            });
+
+            messageArea.value = '';
+        });
+
+        socket.on('message', data => {
+            let msg = data.data;
+            let start = data.start;
+            if (start) {
+                startChat.style.display = 'none';
+                typing.style.display = 'block';
+            }
+            
+            let newMessage = document.createElement('div');
+            newMessage.textContent = msg;
+            chat.appendChild(newMessage);
+        });
+        window.onbeforeunload = e => {
+            confirm = window.confirm('退出すると対話データが消えてしまいます．\n退出してもよろしいですか？')
+            if (confirm) {socket.emit('leave');}
+            else{ e.preventDefault();}
+            return confirm;
+        }
     </script>
 </html>
