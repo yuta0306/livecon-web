@@ -16,7 +16,7 @@
                     <div>{{ msg }}</div>
                 {% endfor %}
             </div>
-            {% if chat|length > 1 %}
+            {% if chats_length > 0 %}
             {% set start = 'none' %}
             {% set typing = 'block' %}
             {% else %}
@@ -31,7 +31,7 @@
                 <input id="sendMessage" type="button" value="send">
             </div>
         </div>
-        <a href="{{ url_for('home') }}">退出する</a>
+        <a href="{{ url_for('home') }}" id="leave">退出する</a>
     </body>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js" integrity="sha512-q/dWJ3kcmjBLU4Qc47E4A9kTB4m3wuTY7vkFJDTZKjTs8jhyGQnaUrxa0Ytd0ssMZhbNua9hE+E7Qv1j+DyZwA==" crossorigin="anonymous"></script>
     <script>
@@ -42,9 +42,12 @@
         const startChat = document.getElementById('startChat');
         const startChatBtn = document.getElementById('startChatBtn');
         const typing = document.getElementById('typing');
+        const leave = document.getElementById('leave');
         const socket = io();
         const room_id = "{{ room_id }}";
-        let role;
+        // const user_id = '{{ user_id }}';
+        let chats_length = '{{ chats_length }}';
+        let prior, turn, user_id;
 
         socket.on('connect', function() {
             socket.emit('my event', {data: 'I\'m connected!'});
@@ -67,6 +70,7 @@
             socket.emit('message', {
                 data: '湯川先輩，お疲れ様です！！😀',
                 start: true,
+                'user_id': user_id,
             })
             startChat.style.display = 'none';
             typing.style.display = 'block';
@@ -77,28 +81,56 @@
             socket.emit('message', {
                 data: message,
                 start: false,
+                'user_id': user_id,
             });
 
             messageArea.value = '';
         });
 
+        socket.on('user_id', data => {
+            if (!user_id) user_id = data.user_id;
+        })
         socket.on('message', data => {
             let msg = data.data;
+            if (!msg) return;
             let start = data.start;
             if (start) {
                 startChat.style.display = 'none';
                 typing.style.display = 'block';
+                prior = true;
             }
+            if (user_id == data.user_id) {
+                turn = false;
+            } else {
+                turn = true;
+            }
+            sendBtn.disabled = !turn;
             
             let newMessage = document.createElement('div');
             newMessage.textContent = msg;
+            if (user_id == data.user_id) {
+                newMessage.classList.add('myMessage');
+            } else {
+                newMessage.classList.add('otherMessage');
+            }
             chat.appendChild(newMessage);
         });
-        window.onbeforeunload = e => {
-            confirm = window.confirm('退出すると対話データが消えてしまいます．\n退出してもよろしいですか？')
-            if (confirm) {socket.emit('leave');}
-            else{ e.preventDefault();}
-            return confirm;
-        }
+        socket.on('prior', data => {
+            let prior_id = data.user_id;
+            if (user_id != prior_id) {
+                turn = true;
+            } else {
+                turn = false
+            }
+        })
+        leave.addEventListener('click', e => {
+            e.preventDefault();
+            let confirm = window.confirm('退出すると対話データが消えてしまいます．\n退出してもよろしいですか？');
+            if (confirm) {
+                console.log('leave');
+                socket.emit('leave', {data: room_id});
+                window.location ="{{ url_for('home') }}";
+            }
+        });
     </script>
 </html>

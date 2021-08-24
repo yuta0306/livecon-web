@@ -46,9 +46,18 @@ def create_room():
 def room(room_id: str):
     if session.get('room_id', None) is None:
         session.update({'room_id': room_id})
-    global chat_cache
+    # if session.get('user_id', None) is None:
+    #     user_id = generate_uid()
+    #     session.update({'user_id': user_id})
+    #     print(session.get('user_id'))
+    chats = chat_cache.get(room_id, [])
+    
     return render_template('room.html', room_id=room_id,
-                            chats=chat_cache.get(room_id, []))
+                            chats=chats,
+                            chats_length=len(chats))
+
+def generate_uid():
+    return secrets.token_urlsafe(32)
 
 # バックグラウンドでサーバー側から常に情報を与える
 # def background(comment):
@@ -78,15 +87,23 @@ def handle_join(data):
     join_room(room_id)
     print('入室', room_id)
     send('入室しました．', to=room_id)
+    user_id = generate_uid()
+    emit('user_id', {'user_id': user_id}, to=room_id)
 
 @socketio.on('leave')
 def handle_leave(data):
     room_id = data.get('data')
     leave_room(room_id)
     print('退室', room_id)
-    send('退室しました', to=room_id)
     global chat_cache
     del chat_cache[room_id]
+    session.clear()
+    send('退室しました', to=room_id)
+
+@socketio.on('reserve prior')
+def handle_prior(data):
+    room_id = data.get('data')
+    emit('prior', data, to=room_id)
 
 @socketio.on('json')
 def handle_json(json):

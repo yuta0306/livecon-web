@@ -33,3 +33,22 @@ h1 {
     margin: 0;
     padding: 0;
 }
+
+.myMessage {
+    left: 0;
+    margin: 10px auto 10px 0;
+    padding: 1rem;
+    max-width: 80%;
+    background: rgb(26, 211, 66);
+    border-radius: 5px;
+}
+
+.otherMessage {
+    right: 0;
+    margin: 10px 0 10px auto;
+    padding: 1rem;
+    max-width: 80%;
+    background: rgb(43, 43, 43);
+    border-radius: 5px;
+    color: #fff;
+}
