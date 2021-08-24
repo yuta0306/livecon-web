@@ -4,8 +4,12 @@ from flask import Flask, render_template, request, sessions, redirect, session
 from flask.helpers import url_for
 from flask_socketio import SocketIO, join_room, leave_room, send, emit
 
+debug = False
 app = Flask(__name__)
-app.config['SECRET_KEY'] = 'secret!'
+if debug:
+    app.config['SECRET_KEY'] = 'secret!'
+else:
+    app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY')
 socketio = SocketIO(app)
 
 chat_cache = {}
@@ -118,4 +122,4 @@ def handle_my_custom_event(json):
 #     print('received json: ' + str(json))
 
 if __name__ == '__main__':
-    socketio.run(app, debug=True)
+    socketio.run(app, debug=debug)
