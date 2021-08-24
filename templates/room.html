@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="ja">
+    <head>
+        <meta charset="UTF-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Room</title>
+    </head>
+    <body>
+        <h1>Room</h1>
+        <button id="shareUrl">URLを共有する</button>
+    </body>
+    <script>
+        const shareButton = document.getElementById('shareUrl');
+        shareButton.addEventListener('click', e => {
+            let url = window.location;
+            const pre = document.createElement('pre');
+            pre.style.webkitUserSelect = 'auto';
+            pre.style.userSelect = 'auto';
+            pre.textContent = url;
+            document.body.appendChild(pre);
+            document.getSelection().selectAllChildren(pre);
+            document.execCommand('copy');
+            document.body.removeChild(pre);
+            return
+        })
+    </script>
+</html>
