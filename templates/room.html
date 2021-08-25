@@ -13,7 +13,7 @@
         <div id="chat-container">
             <div id="chat">
                 {% for msg in chats %}
-                    <div>{{ msg }}</div>
+                <div>{{ msg }}</div>
                 {% endfor %}
             </div>
             {% if chats_length > 0 %}
@@ -30,6 +30,7 @@
                 <input type="text" id="message">
                 <input id="sendMessage" type="button" value="send">
             </div>
+            <a href id="download" download="{{ room_id }}.txt">チャットデータをダウンロードする</a>
         </div>
         <a href="{{ url_for('home') }}" id="leave">退出する</a>
     </body>
@@ -42,6 +43,7 @@
         const startChat = document.getElementById('startChat');
         const startChatBtn = document.getElementById('startChatBtn');
         const typing = document.getElementById('typing');
+        const download = document.getElementById('download');
         const leave = document.getElementById('leave');
         const socket = io();
         const room_id = "{{ room_id }}";
@@ -86,6 +88,20 @@
 
             messageArea.value = '';
         });
+        download.addEventListener('click', e => {
+            let corpus = '';
+            let system = true;
+            for (elm of chat.getElementsByTagName('div')) {
+                if (system) {
+                    corpus += `<sys>${elm.innerText}\n`;
+                } else {
+                    corpus += `<usr>${elm.innerText}\n`;
+                }
+                system = !system;
+            }
+            let blob = new Blob([corpus], {type: 'text/plain;charset=utf-8'});
+            download.href = window.URL.createObjectURL(blob);
+        })
 
         socket.on('user_id', data => {
             if (!user_id) user_id = data.user_id;
