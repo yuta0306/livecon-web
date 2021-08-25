@@ -1,1 +1,1 @@
-web: gunicorn -w 1 --threads 50 module:app
+web: gunicorn -w 1 --threads 50 app:app
