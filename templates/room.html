@@ -146,14 +146,22 @@
             e.preventDefault();
             let confirm = window.confirm('退出すると対話データが消えてしまいます．\n退出してもよろしいですか？');
             if (confirm) {
-                console.log('leave');
                 socket.emit('leave', {data: room_id});
+                console.log('leave');
                 window.location ="{{ url_for('home') }}";
             }
         });
-        window.onbeforeunload = function () {
-            console.log('leave');
+        window.onbeforeunload = function (e) {
+            e.preventDefault();
             socket.emit('leave', {data: room_id});
+            console.log('leave');
+            window.location = e.newURL;
+        }
+        window.onhashchange = function (e) {
+            e.preventDefault();
+            socket.emit('leave', {data: room_id});
+            console.log('leave');
+            window.location = e.newURL;
         }
     </script>
 </html>

@@ -1,5 +1,7 @@
 import os
 import secrets
+import json
+
 from flask import Flask, render_template, request, sessions, redirect, session
 from flask.helpers import url_for
 from flask_socketio import SocketIO, join_room, leave_room, send, emit
@@ -12,7 +14,6 @@ else:
     app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY')
 socketio = SocketIO(app)
 
-rooms = []
 
 @app.context_processor
 def override_url_for():
@@ -39,8 +40,9 @@ def create_room():
         session.update({
             'room_id': room_id,
         })
-        global rooms
+        rooms = json.load(open('rooms.json', 'r'))
         rooms.append(room_id)
+        json.dump(rooms, open('rooms.json', 'w'))
         return redirect(url_for('room', room_id=room_id))
 
     else:
@@ -50,13 +52,10 @@ def create_room():
 
 @app.route('/room/<room_id>')
 def room(room_id: str):
-    print(rooms)
+    rooms = json.load(open('rooms.json', 'r'))
+    if room_id not in rooms:
+        return redirect('/')
     session.update({'room_id': room_id})
-    # if session.get('user_id', None) is None:
-    #     user_id = generate_uid()
-    #     session.update({'user_id': user_id})
-    #     print(session.get('user_id'))
-    # chats = chat_cache.get(room_id, [])
     
     return render_template('room.html', room_id=room_id,)
                             # chats=chats,
@@ -81,10 +80,6 @@ def generate_uid():
 def handle_message(data):
     room_id = session.get('room_id')
     print(room_id, data)
-    # global chat_cache
-    # if chat_cache.get(room_id) is None:
-        # chat_cache[room_id] = []
-    # chat_cache[room_id].append(data['data'])
     emit('message', data, to=room_id)
 
 @socketio.on('join')
@@ -98,11 +93,13 @@ def handle_join(data):
 
 @socketio.on('leave')
 def handle_leave(data):
+    rooms = json.load(open('rooms.json', 'r'))
     room_id = data.get('data')
     leave_room(room_id)
     print('退室', room_id)
-    # global chat_cache
-    # del chat_cache[room_id]
+    rooms.remove(room_id)
+    json.dump(rooms, open('rooms.json', 'w'))
+    print(rooms, room_id)
     session.clear()
     send('退室しました', to=room_id)
 
@@ -119,9 +116,6 @@ def handle_json(json):
 def handle_my_custom_event(json):
     print('received json: ' + str(json))
 
-# @socketio.on('my event', namespace='/test')
-# def handle_my_custom_namespace_event(json):
-#     print('received json: ' + str(json))
 
 if __name__ == '__main__':
     if debug:
