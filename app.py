@@ -4,7 +4,7 @@ from flask import Flask, render_template, request, sessions, redirect, session
 from flask.helpers import url_for
 from flask_socketio import SocketIO, join_room, leave_room, send, emit
 
-debug = False
+debug = True
 app = Flask(__name__)
 if debug:
     app.config['SECRET_KEY'] = 'secret!'

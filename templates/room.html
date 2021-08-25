@@ -18,6 +18,7 @@
                     <li>startを押した方が，清水(システム)として振る舞います．<br>startを押すと，「湯川先輩，お疲れ様です！！😀」で対話が始まります</li>
                     <li>startではない方が，先輩の湯川(ユーザ)です．</li>
                     <li>湯川サイドは，婉曲的に誘いを断り続けてください．</li>
+                    <li>交互にしか対話することができません．</li>
                     <li>最低各人8回は発話してください．</li>
                     <li>退出前に，最後にダウンロードのリンクを押して，コーパスをダウンロードしてください．</li>
                 </ul>
@@ -119,6 +120,7 @@
         })
         socket.on('message', data => {
             let msg = data.data;
+            console.log(msg)
             if (!msg) return;
             let start = data.start;
             if (start) {
