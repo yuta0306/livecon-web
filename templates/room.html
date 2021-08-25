@@ -11,6 +11,17 @@
         <h1>Room</h1>
         <button id="shareUrl">URLを共有する</button>
         <div id="chat-container">
+            <div>
+                <h2>説明書</h2>
+                <ul>
+                    <li>設定は，<a href="https://dialog-system-live-competition.github.io/dslc4/situationtrack.html" target="_blank" rel="noopener noreferrer">こちら</a>を参照してください．</li>
+                    <li>startを押した方が，清水(システム)として振る舞います．</li>
+                    <li>startではない方が，先輩の湯川(ユーザ)です．</li>
+                    <li>湯川サイドは，婉曲的に誘いを断り続けてください．</li>
+                    <li>最低各人8回は発話してください．</li>
+                    <li>退出前に，最後にダウンロードのリンクを押して，コーパスをダウンロードしてください．</li>
+                </ul>
+            </div>
             <div id="chat">
                 {% for msg in chats %}
                 <div>{{ msg }}</div>
