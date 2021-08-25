@@ -12,7 +12,7 @@ else:
     app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY')
 socketio = SocketIO(app)
 
-chat_cache = {}
+rooms = []
 
 @app.context_processor
 def override_url_for():
@@ -39,6 +39,8 @@ def create_room():
         session.update({
             'room_id': room_id,
         })
+        global rooms
+        rooms.append(room_id)
         return redirect(url_for('room', room_id=room_id))
 
     else:
@@ -48,8 +50,8 @@ def create_room():
 
 @app.route('/room/<room_id>')
 def room(room_id: str):
-    if session.get('room_id', None) is None:
-        session.update({'room_id': room_id})
+    print(rooms)
+    session.update({'room_id': room_id})
     # if session.get('user_id', None) is None:
     #     user_id = generate_uid()
     #     session.update({'user_id': user_id})
