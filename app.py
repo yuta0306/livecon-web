@@ -54,11 +54,11 @@ def room(room_id: str):
     #     user_id = generate_uid()
     #     session.update({'user_id': user_id})
     #     print(session.get('user_id'))
-    chats = chat_cache.get(room_id, [])
+    # chats = chat_cache.get(room_id, [])
     
-    return render_template('room.html', room_id=room_id,
-                            chats=chats,
-                            chats_length=len(chats))
+    return render_template('room.html', room_id=room_id,)
+                            # chats=chats,
+                            # chats_length=len(chats))
 
 def generate_uid():
     return secrets.token_urlsafe(32)
@@ -79,10 +79,10 @@ def generate_uid():
 def handle_message(data):
     room_id = session.get('room_id')
     print(room_id, data)
-    global chat_cache
-    if chat_cache.get(room_id) is None:
-        chat_cache[room_id] = []
-    chat_cache[room_id].append(data['data'])
+    # global chat_cache
+    # if chat_cache.get(room_id) is None:
+        # chat_cache[room_id] = []
+    # chat_cache[room_id].append(data['data'])
     emit('message', data, to=room_id)
 
 @socketio.on('join')
@@ -99,8 +99,8 @@ def handle_leave(data):
     room_id = data.get('data')
     leave_room(room_id)
     print('退室', room_id)
-    global chat_cache
-    del chat_cache[room_id]
+    # global chat_cache
+    # del chat_cache[room_id]
     session.clear()
     send('退室しました', to=room_id)
 

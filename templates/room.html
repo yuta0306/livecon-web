@@ -24,21 +24,21 @@
                 </ul>
             </div>
             <div id="chat">
-                {% for msg in chats %}
+                <!-- {% for msg in chats %}
                 <div>{{ msg }}</div>
-                {% endfor %}
+                {% endfor %} -->
             </div>
-            {% if chats_length > 0 %}
+            <!-- {% if chats_length > 0 %}
             {% set start = 'none' %}
             {% set typing = 'block' %}
             {% else %}
             {% set start = 'block' %}
             {% set typing = 'none' %}
-            {% endif %}
-            <div id="startChat" style="display: {{ start }};">
+            {% endif %} -->
+            <div id="startChat" style="display: block">
                 <input id="startChatBtn" type="button" value="start">
             </div>
-            <div id="typing" style="display: {{ typing }};">
+            <div id="typing" style="display: none;">
                 <input type="text" id="message">
                 <input id="sendMessage" type="button" value="send">
             </div>
@@ -60,7 +60,7 @@
         const socket = io();
         const room_id = "{{ room_id }}";
         // const user_id = '{{ user_id }}';
-        let chats_length = '{{ chats_length }}';
+        // let chats_length = '{{ chats_length }}';
         let prior, turn, user_id;
 
         socket.on('connect', function() {
