@@ -4,7 +4,7 @@ from flask import Flask, render_template, request, sessions, redirect, session
 from flask.helpers import url_for
 from flask_socketio import SocketIO, join_room, leave_room, send, emit
 
-debug = True
+debug = False
 app = Flask(__name__)
 if debug:
     app.config['SECRET_KEY'] = 'secret!'
@@ -125,4 +125,4 @@ if __name__ == '__main__':
     if debug:
         socketio.run(app, debug=debug)
     else:
-        socketio.run(app, host='0.0.0.0', port=80, debug=debug)
+        socketio.run(app, host='0.0.0.0', debug=debug)
