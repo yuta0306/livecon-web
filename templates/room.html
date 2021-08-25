@@ -51,7 +51,6 @@
         const socket = io();
         const room_id = "{{ room_id }}";
         // const user_id = '{{ user_id }}';
-        // let chats_length = '{{ chats_length }}';
         let prior, turn, user_id;
 
         socket.on('connect', function() {
@@ -152,5 +151,9 @@
                 window.location ="{{ url_for('home') }}";
             }
         });
+        window.onbeforeunload = function () {
+            console.log('leave');
+            socket.emit('leave', {data: room_id});
+        }
     </script>
 </html>
